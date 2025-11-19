@@ -17,7 +17,20 @@ app.set('strict routing', false);
 
 // Configuración de CORS
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'https://playlib-backend.onrender.com'
+    ];
+    // Permitir solicitudes sin origen (como apps móviles o curl)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
@@ -48,7 +61,7 @@ app.use((req, res) => {
 // Manejo de errores
 app.use((err, req, res, next) => {
   console.error('Error:', err);
-  
+
   // Manejo de errores de validación
   if (err.name === 'ValidationError') {
     return res.status(400).json({
@@ -71,7 +84,7 @@ const startServer = async () => {
   try {
     const PORT = process.env.PORT || 5100;
     await dbClient.conectarDB();
-    
+
     const server = app.listen(PORT, () => {
       console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
       console.log(`📚 Base de datos: ${process.env.DB_NAME}@${process.env.SERVER_DB}`);
