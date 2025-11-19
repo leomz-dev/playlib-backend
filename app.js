@@ -11,38 +11,32 @@ const app = express();
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
-// CORS Configuration
+// Configurar Express para decodificar caracteres codificados en URL correctamente
+app.set('query parser', 'extended');
+app.set('strict routing', false);
+
+// Configuración de CORS
 const corsOptions = {
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
-  optionsSuccessStatus: 200 // For legacy browser support
+  optionsSuccessStatus: 200 // Para soporte de navegadores legacy
 };
 
 app.use(cors(corsOptions));
 
-// Health check endpoint
+// Endpoint de verificación de estado
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'API is running' });
+  res.status(200).json({ status: 'ok', message: 'API está funcionando' });
 });
 
-// API Routes
+// Rutas de la API
 app.use('/api/juegos', routesJuegos);
 
-// Root route
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Bienvenido a la API de PlayLib',
-    endpoints: {
-      juegos: '/api/juegos',
-      health: '/health'
-    },
-    documentation: 'Documentación disponible en /docs' // Consider adding Swagger/OpenAPI docs
-  });
-});
 
-// 404 Handler
+
+// Manejo de rutas no encontradas (404)
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -51,11 +45,11 @@ app.use((req, res) => {
   });
 });
 
-// Error handling middleware
+// Manejo de errores
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   
-  // Handle validation errors
+  // Manejo de errores de validación
   if (err.name === 'ValidationError') {
     return res.status(400).json({
       success: false,
@@ -64,7 +58,7 @@ app.use((err, req, res, next) => {
     });
   }
 
-  // Handle other errors
+  // Manejo de otros errores
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Error interno del servidor',
@@ -72,21 +66,21 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
+// Iniciar el servidor
 const startServer = async () => {
   try {
     const PORT = process.env.PORT || 5100;
-    await dbClient.connectWithRetry();
+    await dbClient.conectarDB();
     
     const server = app.listen(PORT, () => {
-      console.log(`\n🚀 Servidor corriendo en http://localhost:${PORT}`);
+      console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
       console.log(`📚 Base de datos: ${process.env.DB_NAME}@${process.env.SERVER_DB}`);
       console.log(`🌍 Frontend: ${process.env.FRONTEND_URL || 'http://localhost:3000'}\n`);
     });
 
     // Manejo de cierre limpio
     const shutdown = () => {
-      console.log('\n🔌 Apagando el servidor...');
+      console.log('🔌 Apagando el servidor...');
       server.close(() => {
         console.log('Servidor detenido');
         process.exit(0);

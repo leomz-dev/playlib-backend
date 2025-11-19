@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "insert-sample": "node scripts/insertSampleGame.js",
+    "migrate": "node scripts/migrateGames.js"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +21,7 @@
     "mongodb": "^6.20.0"
   },
   "devDependencies": {
+    "@ljharb/tsconfig": "^0.3.2",
     "@types/cors": "^2.8.19"
   }
 }
